@@ -9,6 +9,9 @@ CLASS /apmg/cl_arborist_node DEFINITION
 * Copyright 2025 apm.to Inc. <https://apm.to>
 * SPDX-License-Identifier: MIT
 ************************************************************************
+* https://www.npmjs.com/package/@npmcli/arborist
+* https://github.com/npm/cli/tree/latest/workspaces/arborist
+************************************************************************
   PUBLIC SECTION.
 
   PROTECTED SECTION.
@@ -19,7 +22,7 @@ CLASS /apmg/cl_arborist_node DEFINITION
       ty_edges TYPE STANDARD TABLE OF ty_edge WITH KEY table_line.
 
     TYPES:
-      "! A Node represents a package that is installed on this system, either as a global package,
+      "! A node represents a package that is installed on this system, either as a global package,
       "! or as a modules of another package (bundle).
       BEGIN OF ty_node,
         package       TYPE /apmg/if_package_json=>ty_package-package,
