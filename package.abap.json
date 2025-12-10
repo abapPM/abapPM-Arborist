@@ -1,16 +1,19 @@
 {
-  "name": "{{module}}",
+  "name": "apm-arborist",
   "version": "1.0.0",
-  "description": "{{package}}",
+  "description": "",
   "type": "module",
   "keywords": [
     "abap",
     "apm",
-    "module"
+    "module",
+    "tree",
+    "dependencies",
+    "arborist"
   ],
   "homepage": "https://abappm.com",
   "bugs": {
-    "url": "https://github.com/abapPM/{{repo}}"
+    "url": "https://github.com/abapPM/abapPM-Arborist/issues"
   },
   "license": "MIT",
   "author": {
@@ -24,7 +27,7 @@
     }
   ],
   "repository": {
-    "url": "https://github.com/abapPM/{{repo}}"
+    "url": "https://github.com/abapPM/abapPM-Arborist"
   },
   "funding": {
     "type": "github",
