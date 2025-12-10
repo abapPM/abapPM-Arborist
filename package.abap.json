@@ -1,15 +1,13 @@
 {
-  "name": "apm-arborist",
+  "name": "@apm/arborist",
   "version": "1.0.0",
-  "description": "",
+  "description": "Inspect and manage package trees (=WIP=)",
   "type": "module",
   "keywords": [
     "abap",
     "apm",
-    "module",
-    "tree",
-    "dependencies",
-    "arborist"
+    "package",
+    "tree"
   ],
   "homepage": "https://abappm.com",
   "bugs": {
@@ -18,7 +16,7 @@
   "license": "MIT",
   "author": {
     "name": "Marc Bernard",
-    "url": "https://abappm.com"
+    "url": "https://github.com/mbtools"
   },
   "maintainers": [
     {
@@ -27,11 +25,12 @@
     }
   ],
   "repository": {
+    "type": "https",
     "url": "https://github.com/abapPM/abapPM-Arborist"
   },
   "funding": {
     "type": "github",
-    "url": "https://github.com/sponsors/abapPM"
+    "url": "https://github.com/sponsors/abappm"
   },
   "dependencies": {
     "error": "^1.0.0"
