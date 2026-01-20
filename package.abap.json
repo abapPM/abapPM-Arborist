@@ -33,6 +33,8 @@
     "url": "https://github.com/sponsors/abappm"
   },
   "dependencies": {
+    "@apm/types": "^1.0.0",
+    "@apm/pacote": "^1.0.0",
     "error": "^1.0.0"
   },
   "engines": {
