@@ -6,6 +6,9 @@ CLASS /apmg/cl_arborist DEFINITION
 ************************************************************************
 * Arborist
 *
+* Inspect and manage package trees. In ABAP, there's only one global
+* tree containing all packages managed by apm.
+*
 * Copyright 2025 apm.to Inc. <https://apm.to>
 * SPDX-License-Identifier: MIT
 ************************************************************************
@@ -14,14 +17,31 @@ CLASS /apmg/cl_arborist DEFINITION
 ************************************************************************
   PUBLIC SECTION.
 
-    METHODS constructor.
+    METHODS constructor
+      IMPORTING
+        registry TYPE string.
+
+    " READING
+
+    "! Reads the installed packages
     METHODS load_actual_tree.
+    "! Read just what the package-lock.abap.json says (FUTURE)
     METHODS load_virtual_tree.
+
+    " OPTIMIZING AND DESIGNING
+
+    "! Build an ideal tree from package.abap.json and various lockfiles
     METHODS build_ideal_tree.
+
+    " WRITING
+
+    "! Make the idealTree be the thing that's persisted
     METHODS reify_tree.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
+
+    DATA registry TYPE string.
 
 ENDCLASS.
 
@@ -36,6 +56,8 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
 
   METHOD constructor.
+
+    me->registry = registry.
 
   ENDMETHOD.
 
