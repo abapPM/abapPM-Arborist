@@ -21,9 +21,10 @@ CLASS /apmg/cl_arborist DEFINITION
 
     CLASS-METHODS factory
       IMPORTING
-        !registry     TYPE string
+        !registry                  TYPE string
+        !with_bundled_dependencies TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(result) TYPE REF TO /apmg/if_arborist.
+        VALUE(result)              TYPE REF TO /apmg/if_arborist.
 
     CLASS-METHODS injector
       IMPORTING
@@ -31,7 +32,8 @@ CLASS /apmg/cl_arborist DEFINITION
 
     METHODS constructor
       IMPORTING
-        !registry TYPE string.
+        !registry                  TYPE string
+        !with_bundled_dependencies TYPE abap_bool DEFAULT abap_false.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -45,6 +47,7 @@ CLASS /apmg/cl_arborist DEFINITION
     CLASS-DATA instance TYPE REF TO /apmg/if_arborist.
 
     DATA registry TYPE string.
+    DATA with_bundled_dependencies TYPE abap_bool.
     DATA log TYPE /apmg/if_arborist=>ty_log.
     DATA visited TYPE ty_visited_set.
     DATA processing_stack TYPE string_table.
@@ -73,9 +76,10 @@ CLASS /apmg/cl_arborist DEFINITION
     "! Create edges for a dependency list
     METHODS create_edges
       IMPORTING
-        !node         TYPE REF TO /apmg/cl_arborist_node
-        !dependencies TYPE /apmg/if_types=>ty_dependencies
-        !type         TYPE /apmg/if_arborist=>ty_dependency_type.
+        !type                 TYPE /apmg/if_arborist=>ty_dependency_type
+        !node                 TYPE REF TO /apmg/cl_arborist_node
+        !dependencies         TYPE /apmg/if_types=>ty_dependencies
+        !bundled_dependencies TYPE /apmg/if_types=>ty_bundled_dependencies OPTIONAL.
 
     "! Check for circular dependency
     METHODS is_circular
@@ -129,7 +133,9 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       message = 'Starting to load actual tree' ).
 
     " Step 1: Get all installed packages with their metadata
-    DATA(packages) = /apmg/cl_package_json=>list( instanciate = abap_true ).
+    DATA(packages) = /apmg/cl_package_json=>list(
+      instanciate = abap_true
+      is_bundle   = abap_false ).
 
     add_log(
       type    = /apmg/if_arborist=>c_log_type-info
@@ -138,25 +144,23 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
     " Step 2: Create nodes for all installed packages first
     " This ensures all nodes exist before we create edges
     LOOP AT packages ASSIGNING FIELD-SYMBOL(<package>).
-      IF <package>-name IS NOT INITIAL AND <package>-version IS NOT INITIAL.
-        TRY.
-            DATA(manifest) = <package>-instance->get( ).
+      TRY.
+          DATA(manifest) = <package>-instance->get( ).
 
-            /apmg/cl_arborist_node=>create(
-              package   = <package>-package
-              manifest  = manifest
-              installed = abap_true ).
+          /apmg/cl_arborist_node=>create(
+            package   = <package>-package
+            manifest  = manifest
+            installed = abap_true ).
 
-            INSERT VALUE #( name = <package>-name ) INTO TABLE visited.
+          INSERT VALUE #( name = <package>-name ) INTO TABLE visited.
 
-          CATCH /apmg/cx_error INTO DATA(error).
-            add_log(
-              type    = /apmg/if_arborist=>c_log_type-warning
-              message = |Error loading package { <package>-name }: { error->get_text( ) }|
-              name    = <package>-name
-              version = <package>-version ).
-        ENDTRY.
-      ENDIF.
+        CATCH /apmg/cx_error INTO DATA(error).
+          add_log(
+            type    = /apmg/if_arborist=>c_log_type-warning
+            message = |Error loading package { <package>-name }: { error->get_text( ) }|
+            name    = <package>-name
+            version = <package>-version ).
+      ENDTRY.
     ENDLOOP.
 
     " Step 3: Process dependencies for each installed package
@@ -251,6 +255,9 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
           invalid_count = invalid_count + 1.
         ENDIF.
       ENDLOOP.
+      LOOP AT <node>->edges_in ASSIGNING <edge>.
+        " TODO:
+      ENDLOOP.
     ENDLOOP.
 
     add_log(
@@ -289,7 +296,8 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD constructor.
 
-    me->registry = registry.
+    me->registry                  = registry.
+    me->with_bundled_dependencies = with_bundled_dependencies.
 
   ENDMETHOD.
 
@@ -301,6 +309,10 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
     ENDIF.
 
     LOOP AT dependencies ASSIGNING FIELD-SYMBOL(<dep>).
+      IF with_bundled_dependencies = abap_false AND line_exists( bundled_dependencies[ table_line = <dep>-key ] ).
+        CONTINUE.
+      ENDIF.
+
       " Create edge (constructor automatically resolves target)
       /apmg/cl_arborist_edge=>create(
         from = node
@@ -404,15 +416,17 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
     " Create edges for production dependencies
     create_edges(
-      node         = node
-      dependencies = node->deps_prod
-      type         = /apmg/if_arborist=>c_dependency_type-prod ).
+      node                 = node
+      dependencies         = node->deps_prod
+      bundled_dependencies = node->deps_bundled
+      type                 = /apmg/if_arborist=>c_dependency_type-prod ).
 
     " Create edges for dev dependencies
     create_edges(
-      node         = node
-      dependencies = node->deps_dev
-      type         = /apmg/if_arborist=>c_dependency_type-dev ).
+      node                 = node
+      dependencies         = node->deps_dev
+      bundled_dependencies = node->deps_bundled
+      type                 = /apmg/if_arborist=>c_dependency_type-dev ).
 
     " Create edges for optional dependencies
     create_edges(

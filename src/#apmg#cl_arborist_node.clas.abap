@@ -42,6 +42,8 @@ CLASS /apmg/cl_arborist_node DEFINITION
     DATA deps_peer TYPE /apmg/if_types=>ty_dependencies READ-ONLY.
     "! Optional dependencies
     DATA deps_optional TYPE /apmg/if_types=>ty_dependencies READ-ONLY.
+    "! Bundled dependencies
+    DATA deps_bundled TYPE /apmg/if_types=>ty_bundled_dependencies READ-ONLY.
     "! Is this a bundled package
     DATA bundle TYPE abap_bool READ-ONLY.
     "! Is this a dev dependency
@@ -189,6 +191,7 @@ CLASS /apmg/cl_arborist_node IMPLEMENTATION.
     me->deps_dev      = manifest-dev_dependencies.
     me->deps_peer     = manifest-peer_dependencies.
     me->deps_optional = manifest-optional_dependencies.
+    me->deps_bundled  = manifest-bundle_dependencies.
     me->installed     = installed.
 
   ENDMETHOD.
