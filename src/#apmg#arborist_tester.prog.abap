@@ -46,10 +46,10 @@ START-OF-SELECTION.
 
   LOOP AT tree ASSIGNING FIELD-SYMBOL(<node>).
     WRITE: / |{ <node>->name }: { <node>->version }| COLOR COL_KEY INTENSIFIED, AT 55 <node>->package,
-      AT 100 lines( <node>->deps_prod ) LEFT-JUSTIFIED,
-      AT 105 lines( <node>->deps_dev ) LEFT-JUSTIFIED,
-      AT 110 lines( <node>->deps_optional ) LEFT-JUSTIFIED,
-      AT 115 lines( <node>->deps_peer ) LEFT-JUSTIFIED.
+      AT 100 lines( <node>->dependencies ) LEFT-JUSTIFIED,
+      AT 105 lines( <node>->dev_dependencies ) LEFT-JUSTIFIED,
+      AT 110 lines( <node>->optional_dependencies ) LEFT-JUSTIFIED,
+      AT 115 lines( <node>->peer_dependencies ) LEFT-JUSTIFIED.
 
     IF <node>->errors IS INITIAL.
       WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <node>->installed })|.
