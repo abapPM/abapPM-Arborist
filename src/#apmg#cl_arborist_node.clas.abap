@@ -34,6 +34,8 @@ CLASS /apmg/cl_arborist_node DEFINITION
     DATA name TYPE /apmg/if_types=>ty_name READ-ONLY.
     "! Installed version
     DATA version TYPE /apmg/if_types=>ty_version READ-ONLY.
+    "! Maximum version that satisfies the list of version specs (of all in edges)
+    DATA max_satisfying_version TYPE /apmg/if_types=>ty_version READ-ONLY.
     "! Production dependencies
     DATA deps_prod TYPE /apmg/if_types=>ty_dependencies READ-ONLY.
     "! Development dependencies
@@ -119,9 +121,22 @@ CLASS /apmg/cl_arborist_node DEFINITION
     "! Check if this node satisfies a version spec
     METHODS satisfies
       IMPORTING
-        !spec         TYPE /apmg/if_types=>ty_spec
+        !range        TYPE /apmg/if_types=>ty_spec
       RETURNING
         VALUE(result) TYPE abap_bool.
+
+    "! Get the maximum version that satisfies a list of version specs
+    METHODS max_satisfying
+      IMPORTING
+        !versions     TYPE /apmg/if_types=>ty_versions
+        !specs        TYPE string_table
+      RETURNING
+        VALUE(result) TYPE /apmg/if_types=>ty_version.
+
+    "! Set the maximum version that satisfies the version specs
+    METHODS set_max_satisfying
+      IMPORTING
+        !max_satisfying TYPE /apmg/if_types=>ty_version.
 
     "! Add an error message
     METHODS add_error
@@ -268,15 +283,52 @@ CLASS /apmg/cl_arborist_node IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD max_satisfying.
+
+    " Concatenate specs into a range (AND) condition
+    DATA(range) = concat_lines_of(
+      table = specs
+      sep   = ` ` ).
+
+    TRY.
+        result = /apmg/cl_semver_ranges=>max_satisfying(
+          versions = versions
+          range    = range ).
+      CATCH /apmg/cx_error.
+        result = ''.
+    ENDTRY.
+
+  ENDMETHOD.
+
+
   METHOD satisfies.
 
     TRY.
         result = /apmg/cl_semver_functions=>satisfies(
           version = version
-          range   = spec ).
+          range   = range ).
       CATCH /apmg/cx_error.
         result = abap_false.
     ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD set_max_satisfying.
+
+    CASE max_satisfying.
+      WHEN ''.
+        installed = abap_false.
+        add_error( 'No version satisfies required specs' ).
+      WHEN version.
+        " current version satisfies
+        installed = abap_true.
+      WHEN OTHERS.
+        installed = abap_false.
+        add_error( |New version { max_satisfying } satisfies required specs| ).
+    ENDCASE.
+
+    max_satisfying_version = max_satisfying.
 
   ENDMETHOD.
 ENDCLASS.

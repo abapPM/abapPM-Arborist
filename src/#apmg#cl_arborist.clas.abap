@@ -96,6 +96,13 @@ CLASS /apmg/cl_arborist DEFINITION
       RETURNING
         VALUE(result) TYPE /apmg/if_types=>ty_package_json.
 
+    "! Get list of available versions from manifest
+    METHODS get_versions
+      IMPORTING
+        !name         TYPE /apmg/if_types=>ty_name
+      RETURNING
+        VALUE(result) TYPE /apmg/if_types=>ty_versions.
+
 ENDCLASS.
 
 
@@ -236,6 +243,35 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       LOOP AT <node>->edges_out ASSIGNING <edge>.
         <edge>->resolve( ).
       ENDLOOP.
+
+      " Aggregate required versions from incoming edges and check satisfaction
+      DATA(required_specs) = VALUE string_table( ).
+      DATA(all_satisfied)  = abap_true.
+      DATA(max_satisfying) = <node>->version.
+
+      LOOP AT <node>->edges_in ASSIGNING <edge>.
+        " Collect all specs from incoming edges
+        INSERT <edge>->spec INTO TABLE required_specs.
+
+        " Check if current node version satisfies this requirement
+        IF <node>->satisfies( <edge>->spec ) = abap_false.
+          all_satisfied = abap_false.
+        ENDIF.
+      ENDLOOP.
+
+      " Determine max_satisfying: if current version satisfies all requirements, use it
+      " Otherwise, max_satisfying needs to be calculated from available versions in registry
+      IF all_satisfied = abap_false AND required_specs IS NOT INITIAL.
+        DATA(available_versions) = get_versions( <node>->name ).
+
+        " Current version doesn't satisfy all requirements
+        " max_satisfying would ideally be the maximum version from registry that satisfies all specs
+        max_satisfying = <node>->max_satisfying(
+          versions = available_versions
+          specs    = required_specs ).
+      ENDIF.
+
+      <node>->set_max_satisfying( max_satisfying ).
     ENDLOOP.
 
     " Log summary
@@ -254,9 +290,6 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
         ELSEIF <edge>->is_invalid( ).
           invalid_count = invalid_count + 1.
         ENDIF.
-      ENDLOOP.
-      LOOP AT <node>->edges_in ASSIGNING <edge>.
-        " TODO:
       ENDLOOP.
     ENDLOOP.
 
@@ -347,6 +380,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       result-dev_dependencies      = existing_node->deps_dev.
       result-optional_dependencies = existing_node->deps_optional.
       result-peer_dependencies     = existing_node->deps_peer.
+      result-bundle_dependencies   = existing_node->deps_bundled.
       RETURN.
     ENDIF.
 
@@ -376,6 +410,27 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
         add_log(
           type    = /apmg/if_arborist=>c_log_type-warning
           message = |Could not fetch manifest for { name }: { error->get_text( ) }|
+          name    = name ).
+    ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD get_versions.
+
+    TRY.
+        DATA(pacote) = /apmg/cl_pacote=>factory(
+          registry = registry
+          name     = name ).
+
+        pacote->packument( ).
+
+        result = pacote->get_versions( ).
+
+      CATCH /apmg/cx_error INTO DATA(error).
+        add_log(
+          type    = /apmg/if_arborist=>c_log_type-warning
+          message = |Could not fetch packument for { name }: { error->get_text( ) }|
           name    = name ).
     ENDTRY.
 

@@ -44,26 +44,25 @@ START-OF-SELECTION.
 
   SKIP.
 
-  LOOP AT tree ASSIGNING FIELD-SYMBOL(<tree>).
-    WRITE: / |{ <tree>->name }: { <tree>->version }| COLOR COL_KEY INTENSIFIED, AT 55 <tree>->package,
-      AT 100 <tree>->installed,
-      AT 105 lines( <tree>->deps_prod ) LEFT-JUSTIFIED,
-      AT 110 lines( <tree>->deps_dev ) LEFT-JUSTIFIED,
-      AT 115 lines( <tree>->deps_optional ) LEFT-JUSTIFIED,
-      AT 120 lines( <tree>->deps_peer ) LEFT-JUSTIFIED.
+  LOOP AT tree ASSIGNING FIELD-SYMBOL(<node>).
+    WRITE: / |{ <node>->name }: { <node>->version }| COLOR COL_KEY INTENSIFIED, AT 55 <node>->package,
+      AT 100 lines( <node>->deps_prod ) LEFT-JUSTIFIED,
+      AT 105 lines( <node>->deps_dev ) LEFT-JUSTIFIED,
+      AT 110 lines( <node>->deps_optional ) LEFT-JUSTIFIED,
+      AT 115 lines( <node>->deps_peer ) LEFT-JUSTIFIED.
 
-    IF <tree>->errors IS INITIAL.
-      WRITE AT 130 'ok' COLOR COL_POSITIVE.
+    IF <node>->errors IS INITIAL.
+      WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <node>->installed })|.
     ELSE.
-      WRITE AT 130 |{ lines( <tree>->errors ) } errors| COLOR COL_NEGATIVE.
+      WRITE: AT 130 |{ lines( <node>->errors ) } errors| COLOR COL_NEGATIVE, |({ <node>->installed })|.
     ENDIF.
     SKIP.
 
-    IF <tree>->edges_out IS NOT INITIAL.
+    IF <node>->edges_out IS NOT INITIAL.
       WRITE: AT /5 'Edges Out >' COLOR COL_NORMAL.
       SKIP.
 
-      LOOP AT <tree>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
+      LOOP AT <node>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
         WRITE: AT /5 |{ <edge>->from->name } > { <edge>->to->name }|,
           AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
@@ -75,11 +74,11 @@ START-OF-SELECTION.
       SKIP.
     ENDIF.
 
-    IF <tree>->edges_in IS NOT INITIAL.
+    IF <node>->edges_in IS NOT INITIAL.
       WRITE: AT /5 '> Edges In' COLOR COL_NORMAL.
       SKIP.
 
-      LOOP AT <tree>->edges_in ASSIGNING <edge>.
+      LOOP AT <node>->edges_in ASSIGNING <edge>.
         WRITE: AT /5 |{ <edge>->from->name } > { <edge>->to->name }|,
           AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
