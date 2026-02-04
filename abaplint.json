@@ -14,6 +14,11 @@
       "files": "/src/**/*.*",
       "folder": "/deps3",
       "url": "https://github.com/abapPM/ABAP-Types"
+    },
+    {
+      "files": "/src/**/*.*",
+      "folder": "/deps4",
+      "url": "https://github.com/abapPM/ABAP-Pacote"
     }
   ],
   "global": {
