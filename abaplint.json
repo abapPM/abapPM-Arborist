@@ -9,6 +9,11 @@
       "files": "/src/**/*.*",
       "folder": "/deps2",
       "url": "https://github.com/abapPM/ABAP-Error"
+    },
+    {
+      "files": "/src/**/*.*",
+      "folder": "/deps3",
+      "url": "https://github.com/abapPM/ABAP-Types"
     }
   ],
   "global": {
