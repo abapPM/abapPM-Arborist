@@ -122,6 +122,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD /apmg/if_arborist~build_ideal_tree.
     " TODO: Future implementation
+    RETURN.
   ENDMETHOD.
 
 
@@ -226,11 +227,13 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD /apmg/if_arborist~load_virtual_tree.
     " TODO: Future implementation - read from package-lock.abap.json
+    RETURN.
   ENDMETHOD.
 
 
   METHOD /apmg/if_arborist~reify_tree.
     " TODO: Future implementation
+    RETURN.
   ENDMETHOD.
 
 
@@ -475,26 +478,25 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
       LOOP AT all_nodes ASSIGNING FIELD-SYMBOL(<node>).
         LOOP AT <node>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
-          IF <edge>->is_missing( ).
-            " Check if we haven't visited this dependency yet
-            IF NOT line_exists( visited[ name = <edge>->name ] ).
-              " Try to get manifest from registry for uninstalled dependency
-              DATA(uninstalled_manifest) = get_manifest( <edge>->name ).
-              IF uninstalled_manifest IS NOT INITIAL.
-                " Create placeholder node for uninstalled package
-                DATA(new_node) = /apmg/cl_arborist_node=>create(
-                  manifest  = uninstalled_manifest
-                  installed = abap_false ).
+          " Check if we haven't visited this dependency yet
+          IF <edge>->is_missing( ) AND NOT line_exists( visited[ name = <edge>->name ] ).
+            " Try to get manifest from registry for uninstalled dependency
+            DATA(uninstalled_manifest) = get_manifest( <edge>->name ).
 
-                INSERT VALUE #( name = <edge>->name ) INTO TABLE visited.
-                INSERT new_node INTO TABLE nodes_to_process.
+            IF uninstalled_manifest IS NOT INITIAL.
+              " Create placeholder node for uninstalled package
+              DATA(new_node) = /apmg/cl_arborist_node=>create(
+                manifest  = uninstalled_manifest
+                installed = abap_false ).
 
-                add_log(
-                  type    = /apmg/if_arborist=>c_log_type-warning
-                  message = |Dependency { <edge>->name }@{ <edge>->spec } is not installed|
-                  name    = <edge>->name
-                  spec    = <edge>->spec ).
-              ENDIF.
+              INSERT VALUE #( name = <edge>->name ) INTO TABLE visited.
+              INSERT new_node INTO TABLE nodes_to_process.
+
+              add_log(
+                type    = /apmg/if_arborist=>c_log_type-warning
+                message = |Dependency { <edge>->name }@{ <edge>->spec } is not installed|
+                name    = <edge>->name
+                spec    = <edge>->spec ).
             ENDIF.
           ENDIF.
         ENDLOOP.
