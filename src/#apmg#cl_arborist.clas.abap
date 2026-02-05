@@ -21,10 +21,10 @@ CLASS /apmg/cl_arborist DEFINITION
 
     CLASS-METHODS factory
       IMPORTING
-        !registry                  TYPE string
-        !with_bundled_dependencies TYPE abap_bool DEFAULT abap_false
+        !registry                 TYPE string
+        !with_bundle_dependencies TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(result)              TYPE REF TO /apmg/if_arborist.
+        VALUE(result)             TYPE REF TO /apmg/if_arborist.
 
     CLASS-METHODS injector
       IMPORTING
@@ -32,8 +32,8 @@ CLASS /apmg/cl_arborist DEFINITION
 
     METHODS constructor
       IMPORTING
-        !registry                  TYPE string
-        !with_bundled_dependencies TYPE abap_bool DEFAULT abap_false.
+        !registry                 TYPE string
+        !with_bundle_dependencies TYPE abap_bool DEFAULT abap_false.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -50,7 +50,7 @@ CLASS /apmg/cl_arborist DEFINITION
     CLASS-DATA instance TYPE REF TO /apmg/if_arborist.
 
     DATA registry TYPE string.
-    DATA with_bundled_dependencies TYPE abap_bool.
+    DATA with_bundle_dependencies TYPE abap_bool.
     DATA log TYPE /apmg/if_arborist=>ty_log.
     DATA visited TYPE ty_visited_set.
     DATA processing_stack TYPE string_table.
@@ -86,10 +86,10 @@ CLASS /apmg/cl_arborist DEFINITION
     "! Create edges for a dependency list
     METHODS create_edges
       IMPORTING
-        !type                 TYPE /apmg/if_arborist=>ty_dependency_type
-        !node                 TYPE REF TO /apmg/cl_arborist_node
-        !dependencies         TYPE /apmg/if_types=>ty_dependencies
-        !bundled_dependencies TYPE /apmg/if_types=>ty_bundled_dependencies OPTIONAL.
+        !type                TYPE /apmg/if_arborist=>ty_dependency_type
+        !node                TYPE REF TO /apmg/cl_arborist_node
+        !dependencies        TYPE /apmg/if_types=>ty_dependencies
+        !bundle_dependencies TYPE /apmg/if_types=>ty_bundle_dependencies OPTIONAL.
 
     "! Check for circular dependency
     METHODS is_circular
@@ -251,7 +251,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
   METHOD constructor.
 
     me->registry                  = registry.
-    me->with_bundled_dependencies = with_bundled_dependencies.
+    me->with_bundle_dependencies = with_bundle_dependencies.
 
   ENDMETHOD.
 
@@ -263,7 +263,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
     ENDIF.
 
     LOOP AT dependencies ASSIGNING FIELD-SYMBOL(<dep>).
-      IF with_bundled_dependencies = abap_false AND line_exists( bundled_dependencies[ table_line = <dep>-key ] ).
+      IF with_bundle_dependencies = abap_false AND line_exists( bundle_dependencies[ table_line = <dep>-key ] ).
         CONTINUE.
       ENDIF.
 
@@ -281,7 +281,9 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
   METHOD factory.
 
     IF instance IS INITIAL.
-      result = NEW /apmg/cl_arborist( registry ).
+      result = NEW /apmg/cl_arborist(
+        registry                 = registry
+        with_bundle_dependencies = with_bundle_dependencies ).
     ELSE.
       result = instance.
     ENDIF.
@@ -401,17 +403,17 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
     " Create edges for production dependencies
     create_edges(
-      node                 = node
-      dependencies         = node->dependencies
-      bundled_dependencies = node->bundle_dependencies
-      type                 = /apmg/if_arborist=>c_dependency_type-prod ).
+      node                = node
+      dependencies        = node->dependencies
+      bundle_dependencies = node->bundle_dependencies
+      type                = /apmg/if_arborist=>c_dependency_type-prod ).
 
     " Create edges for dev dependencies
     create_edges(
-      node                 = node
-      dependencies         = node->dev_dependencies
-      bundled_dependencies = node->bundle_dependencies
-      type                 = /apmg/if_arborist=>c_dependency_type-dev ).
+      node                = node
+      dependencies        = node->dev_dependencies
+      bundle_dependencies = node->bundle_dependencies
+      type                = /apmg/if_arborist=>c_dependency_type-dev ).
 
     " Create edges for optional dependencies
     create_edges(

@@ -44,8 +44,8 @@ CLASS /apmg/cl_arborist_node DEFINITION
     DATA peer_dependencies TYPE /apmg/if_types=>ty_dependencies READ-ONLY.
     "! Optional dependencies
     DATA optional_dependencies TYPE /apmg/if_types=>ty_dependencies READ-ONLY.
-    "! Bundled dependencies
-    DATA bundle_dependencies TYPE /apmg/if_types=>ty_bundled_dependencies READ-ONLY.
+    "! bundle dependencies
+    DATA bundle_dependencies TYPE /apmg/if_types=>ty_bundle_dependencies READ-ONLY.
     "! Is this package installed
     DATA installed TYPE abap_bool READ-ONLY.
     "! Outgoing edges (dependencies of this package)

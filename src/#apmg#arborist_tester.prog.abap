@@ -16,8 +16,8 @@ START-OF-SELECTION.
 
   TRY.
       DATA(arborist) = /apmg/cl_arborist=>factory(
-        registry                  = p_reg
-        with_bundled_dependencies = p_deps ).
+        registry                 = p_reg
+        with_bundle_dependencies = p_deps ).
 
       DATA(tree) = arborist->load_actual_tree( ).
 
