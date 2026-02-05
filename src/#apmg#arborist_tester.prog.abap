@@ -16,8 +16,8 @@ START-OF-SELECTION.
 
   TRY.
       DATA(arborist) = /apmg/cl_arborist=>factory(
-        registry                  = p_reg
-        with_bundled_dependencies = p_deps ).
+        registry                 = p_reg
+        with_bundle_dependencies = p_deps ).
 
       DATA(tree) = arborist->load_actual_tree( ).
 
@@ -26,7 +26,7 @@ START-OF-SELECTION.
       RETURN.
   ENDTRY.
 
-  WRITE: / 'Log:' COLOR COL_HEADING.
+  WRITE / 'Log:' COLOR COL_HEADING.
   SKIP.
 
   DATA(log) = arborist->get_log( ).
@@ -37,7 +37,7 @@ START-OF-SELECTION.
 
   SKIP.
   ULINE.
-  WRITE: / 'Tree:' COLOR COL_HEADING.
+  WRITE / 'Tree:' COLOR COL_HEADING.
   SKIP.
   WRITE: / 'Name @ Version', AT 55 'Package',
     AT 100 'Inst', AT 105 'Prod', AT 110 'Dev', AT 115 'Opt', AT 120 'Peer', AT 130 'Status'.
@@ -59,7 +59,7 @@ START-OF-SELECTION.
     SKIP.
 
     IF <node>->edges_out IS NOT INITIAL.
-      WRITE: AT /5 'Edges Out >' COLOR COL_NORMAL.
+      WRITE AT /5 'Edges Out >' COLOR COL_NORMAL.
       SKIP.
 
       LOOP AT <node>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
@@ -75,7 +75,7 @@ START-OF-SELECTION.
     ENDIF.
 
     IF <node>->edges_in IS NOT INITIAL.
-      WRITE: AT /5 '> Edges In' COLOR COL_NORMAL.
+      WRITE AT /5 '> Edges In' COLOR COL_NORMAL.
       SKIP.
 
       LOOP AT <node>->edges_in ASSIGNING <edge>.
