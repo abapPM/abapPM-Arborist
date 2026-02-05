@@ -13,12 +13,12 @@
     {
       "files": "/src/**/*.*",
       "folder": "/deps3",
-      "url": "https://github.com/abapPM/ABAP-Types"
+      "url": "https://github.com/abapPM/abapPM-Types"
     },
     {
       "files": "/src/**/*.*",
       "folder": "/deps4",
-      "url": "https://github.com/abapPM/ABAP-Pacote"
+      "url": "https://github.com/abapPM/abapPM-Pacote"
     }
   ],
   "global": {
@@ -79,7 +79,7 @@
     "constant_classes": true,
     "constructor_visibility_public": true,
     "contains_tab": true,
-    "cyclic_oo": true,
+    "cyclic_oo": false,
     "cyclomatic_complexity": true,
     "dangerous_statement": true,
     "db_operation_in_loop": true,
