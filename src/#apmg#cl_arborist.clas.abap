@@ -122,7 +122,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD /apmg/if_arborist~build_ideal_tree.
     " TODO: Future implementation
-    RETURN.
+    ASSERT 0 = 1.
   ENDMETHOD.
 
 
@@ -227,13 +227,13 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD /apmg/if_arborist~load_virtual_tree.
     " TODO: Future implementation - read from package-lock.abap.json
-    RETURN.
+    ASSERT 0 = 1.
   ENDMETHOD.
 
 
   METHOD /apmg/if_arborist~reify_tree.
     " TODO: Future implementation
-    RETURN.
+    ASSERT 0 = 1.
   ENDMETHOD.
 
 
