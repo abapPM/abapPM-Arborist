@@ -148,7 +148,11 @@
       "ignoreGlobalInterface": false
     },
     "inline_data_old_versions": true,
-    "intf_referencing_clas": true,
+    "intf_referencing_clas": {
+      "exclude": [
+        "#apmg#if_arborist"
+      ]
+    },
     "invalid_table_index": true,
     "keep_single_parameter_on_one_line": true,
     "keyword_case": true,
