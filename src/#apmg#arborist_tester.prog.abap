@@ -40,16 +40,17 @@ START-OF-SELECTION.
   WRITE / 'Tree:' COLOR COL_HEADING.
   SKIP.
   WRITE: / 'Name @ Version', AT 55 'Package',
-    AT 100 'Inst', AT 105 'Prod', AT 110 'Dev', AT 115 'Opt', AT 120 'Peer', AT 130 'Status'.
+    AT 100 'Type', AT 105 'Prod', AT 110 'Dev', AT 115 'Opt', AT 120 'Peer', AT 130 'Status'.
 
   SKIP.
 
   LOOP AT tree ASSIGNING FIELD-SYMBOL(<node>).
     WRITE: / |{ <node>->name }: { <node>->version }| COLOR COL_KEY INTENSIFIED, AT 55 <node>->package,
-      AT 100 lines( <node>->dependencies ) LEFT-JUSTIFIED,
-      AT 105 lines( <node>->dev_dependencies ) LEFT-JUSTIFIED,
-      AT 110 lines( <node>->optional_dependencies ) LEFT-JUSTIFIED,
-      AT 115 lines( <node>->peer_dependencies ) LEFT-JUSTIFIED.
+      AT 100 '-',
+      AT 105 lines( <node>->dependencies ) LEFT-JUSTIFIED,
+      AT 110 lines( <node>->dev_dependencies ) LEFT-JUSTIFIED,
+      AT 115 lines( <node>->optional_dependencies ) LEFT-JUSTIFIED,
+      AT 120 lines( <node>->peer_dependencies ) LEFT-JUSTIFIED.
 
     IF <node>->errors IS INITIAL.
       WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <node>->installed })|.

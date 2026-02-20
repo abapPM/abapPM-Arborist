@@ -144,6 +144,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
     " Clear previous tree and state
     /apmg/cl_arborist_node=>clear( ).
+
     CLEAR: log, visited, processing_stack.
 
     add_log(
@@ -253,7 +254,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD constructor.
 
-    me->registry                  = registry.
+    me->registry                 = registry.
     me->with_bundle_dependencies = with_bundle_dependencies.
 
   ENDMETHOD.
