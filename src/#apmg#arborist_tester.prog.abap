@@ -76,11 +76,11 @@ START-OF-SELECTION.
     ENDIF.
 
     IF <node>->edges_in IS NOT INITIAL.
-      WRITE AT /5 '> Edges In' COLOR COL_NORMAL.
+      WRITE AT /5 'Edges In <' COLOR COL_NORMAL.
       SKIP.
 
       LOOP AT <node>->edges_in ASSIGNING <edge>.
-        WRITE: AT /5 |{ <edge>->from->name } > { <edge>->to->name }|,
+        WRITE: AT /5 |{ <edge>->to->name } < { <edge>->from->name }|,
           AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
