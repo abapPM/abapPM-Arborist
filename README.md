@@ -1,6 +1,8 @@
-<picture>
-  <img width="100" height="40" alt="apm logo banner" src="https://github.com/abapPM/abapPM/blob/main/img/apm_banner.png?raw=true&ver=1.0.0">
-</picture>
+<div align="right">
+  <picture>
+    <img width="100" height="40" alt="apm logo banner" src="https://github.com/abapPM/abapPM/blob/main/img/apm_banner.png?raw=true&ver=1.0.0">
+  </picture>
+</div>
 
 ![Version](https://img.shields.io/endpoint?url=https://shield.abappm.com/github/abapPM/abapPM-Arborist/src/%2523apmg%2523if_arborist.intf.abap/c_version&label=Version&color=blue)
 
