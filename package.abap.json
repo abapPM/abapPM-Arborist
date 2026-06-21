@@ -42,5 +42,10 @@
   "engines": {
     "abap": ">=7.50",
     "apm": ">=1"
+  },
+  "sapPackage": {
+    "default": "/APMG/APM-ARBORIST",
+    "applicationComponent": "BC",
+    "abapLanguageVersion": "standard"
   }
 }
