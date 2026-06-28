@@ -56,6 +56,9 @@ START-OF-SELECTION.
       WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <node>->installed })|.
     ELSE.
       WRITE: AT 130 |{ lines( <node>->errors ) } errors| COLOR COL_NEGATIVE, |({ <node>->installed })|.
+      LOOP AT <node>->errors ASSIGNING FIELD-SYMBOL(<error>).
+        WRITE <error> COLOR COL_NEGATIVE.
+      ENDLOOP.
     ENDIF.
     SKIP.
 
@@ -69,7 +72,8 @@ START-OF-SELECTION.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
         ELSE.
-          WRITE: AT 130 <edge>->error COLOR COL_NEGATIVE, |({ <edge>->valid })|.
+          WRITE: AT 130 <edge>->error COLOR COL_NEGATIVE, |({ <edge>->valid })|,
+                 <edge>->get_error_description( ) COLOR COL_NEGATIVE.
         ENDIF.
       ENDLOOP.
       SKIP.
@@ -85,7 +89,8 @@ START-OF-SELECTION.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
         ELSE.
-          WRITE: AT 130 <edge>->error COLOR COL_NEGATIVE, |({ <edge>->valid })|.
+          WRITE: AT 130 <edge>->error COLOR COL_NEGATIVE, |({ <edge>->valid })|,
+                 <edge>->get_error_description( ) COLOR COL_NEGATIVE.
         ENDIF.
       ENDLOOP.
       SKIP.
