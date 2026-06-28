@@ -37,7 +37,7 @@
   "dependencies": {
     "@apm/pacote": "^1.0.0",
     "@apm/types": "^1.0.0",
-    "error": "^1.0.0"
+    "exceptions": "^1.0.0"
   },
   "engines": {
     "abap": ">=7.50",
