@@ -19,8 +19,7 @@ SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-t01.
 SELECTION-SCREEN END OF BLOCK b2.
 
 SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-t02.
-  PARAMETERS:
-    p_rem_n  TYPE string LOWER CASE.
+  PARAMETERS p_rem_n  TYPE string LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b3.
 
 START-OF-SELECTION.
@@ -114,7 +113,7 @@ START-OF-SELECTION.
       SKIP.
 
       LOOP AT <node>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
-        WRITE: AT /5 |{ <edge>->from->name } > |.
+        WRITE AT /5 |{ <edge>->from->name } > |.
         IF <edge>->to IS NOT INITIAL.
           WRITE <edge>->to->name.
         ENDIF.
@@ -134,7 +133,7 @@ START-OF-SELECTION.
       SKIP.
 
       LOOP AT <node>->edges_in ASSIGNING <edge>.
-        WRITE: AT /5 |{ <edge>->to->name } < |.
+        WRITE AT /5 |{ <edge>->to->name } < |.
         IF <edge>->from IS NOT INITIAL.
           WRITE <edge>->from->name.
         ENDIF.
