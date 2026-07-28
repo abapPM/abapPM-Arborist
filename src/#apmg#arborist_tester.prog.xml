@@ -11,21 +11,51 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>I</ID>
+     <KEY>T01</KEY>
+     <ENTRY>Add package</ENTRY>
+     <LENGTH>50</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>T02</KEY>
+     <ENTRY>Remove package</ENTRY>
+     <LENGTH>50</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>Arborist Tester</ENTRY>
      <LENGTH>15</LENGTH>
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_DEPS</KEY>
-     <ENTRY>Include bundled dependencies</ENTRY>
-     <LENGTH>36</LENGTH>
+     <KEY>P_ADD_N</KEY>
+     <ENTRY>Name</ENTRY>
+     <LENGTH>12</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_ADD_V</KEY>
+     <ENTRY>Version</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_PROD</KEY>
+     <ENTRY>Is production (no devDeps)</ENTRY>
+     <LENGTH>34</LENGTH>
     </item>
     <item>
      <ID>S</ID>
      <KEY>P_REG</KEY>
      <ENTRY>Registry</ENTRY>
      <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_REM_N</KEY>
+     <ENTRY>Name</ENTRY>
+     <LENGTH>12</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

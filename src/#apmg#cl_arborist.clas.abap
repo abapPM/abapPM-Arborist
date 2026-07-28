@@ -56,7 +56,7 @@ CLASS /apmg/cl_arborist DEFINITION
     DATA processing_stack TYPE string_table.
     DATA current_tree TYPE REF TO /apmg/cl_arborist_tree.
     DATA ideal_tree TYPE REF TO /apmg/cl_arborist_tree.
-    DATA production TYPE abap_bool.
+    DATA is_production TYPE abap_bool.
 
     METHODS add_log
       IMPORTING
@@ -170,7 +170,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD /apmg/if_arborist~build_ideal_tree.
 
-    me->production = production.
+    me->is_production = is_production.
 
     /apmg/if_arborist~load_actual_tree( ).
 
@@ -526,7 +526,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       dependencies = node->dependencies
       type         = /apmg/if_arborist=>c_dependency_type-prod ).
 
-    IF production = abap_false.
+    IF is_production = abap_false.
       create_edges(
         tree         = tree
         node         = node
@@ -615,51 +615,6 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
           depth = iteration ).
       ENDLOOP.
     ENDDO.
-
-  ENDMETHOD.
-
-
-  METHOD try_add_uninstalled.
-
-    TRY.
-        DATA(uninstalled_manifest) = get_manifest(
-          tree = tree
-          name = edge->name ).
-
-        IF uninstalled_manifest IS INITIAL.
-          RETURN.
-        ENDIF.
-
-        result = tree->add_node(
-          manifest  = uninstalled_manifest
-          installed = abap_false ).
-
-        INSERT VALUE #( name = edge->name ) INTO TABLE visited.
-
-        IF edge->type = /apmg/if_arborist=>c_dependency_type-optional.
-          add_log(
-            type    = /apmg/if_arborist=>c_log_type-warning
-            message = |Optional dependency { edge->name }@{ edge->spec } is not installed|
-            name    = edge->name
-            spec    = edge->spec ).
-        ELSE.
-          add_log(
-            type    = /apmg/if_arborist=>c_log_type-warning
-            message = |Dependency { edge->name }@{ edge->spec } is not installed|
-            name    = edge->name
-            spec    = edge->spec ).
-        ENDIF.
-
-      CATCH /apmg/cx_error INTO DATA(manifest_error).
-        IF edge->type = /apmg/if_arborist=>c_dependency_type-optional.
-          DATA(error_text) = manifest_error->get_text( ).
-          add_log(
-            type    = /apmg/if_arborist=>c_log_type-warning
-            message = |Optional dependency { edge->name } could not be resolved: { error_text }|
-            name    = edge->name
-            spec    = edge->spec ).
-        ENDIF.
-    ENDTRY.
 
   ENDMETHOD.
 
@@ -807,6 +762,51 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD try_add_uninstalled.
+
+    TRY.
+        DATA(uninstalled_manifest) = get_manifest(
+          tree = tree
+          name = edge->name ).
+
+        IF uninstalled_manifest IS INITIAL.
+          RETURN.
+        ENDIF.
+
+        result = tree->add_node(
+          manifest  = uninstalled_manifest
+          installed = abap_false ).
+
+        INSERT VALUE #( name = edge->name ) INTO TABLE visited.
+
+        IF edge->type = /apmg/if_arborist=>c_dependency_type-optional.
+          add_log(
+            type    = /apmg/if_arborist=>c_log_type-warning
+            message = |Optional dependency { edge->name }@{ edge->spec } is not installed|
+            name    = edge->name
+            spec    = edge->spec ).
+        ELSE.
+          add_log(
+            type    = /apmg/if_arborist=>c_log_type-warning
+            message = |Dependency { edge->name }@{ edge->spec } is not installed|
+            name    = edge->name
+            spec    = edge->spec ).
+        ENDIF.
+
+      CATCH /apmg/cx_error INTO DATA(manifest_error).
+        IF edge->type = /apmg/if_arborist=>c_dependency_type-optional.
+          DATA(error_text) = manifest_error->get_text( ).
+          add_log(
+            type    = /apmg/if_arborist=>c_log_type-warning
+            message = |Optional dependency { edge->name } could not be resolved: { error_text }|
+            name    = edge->name
+            spec    = edge->spec ).
+        ENDIF.
+    ENDTRY.
+
+  ENDMETHOD.
+
+
   METHOD validate_add_packages.
 
     LOOP AT add_packages ASSIGNING FIELD-SYMBOL(<add>).
@@ -830,6 +830,4 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
     ENDLOOP.
 
   ENDMETHOD.
-
-
 ENDCLASS.

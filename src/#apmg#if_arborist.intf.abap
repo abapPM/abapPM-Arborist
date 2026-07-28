@@ -89,7 +89,7 @@ INTERFACE /apmg/if_arborist PUBLIC.
     IMPORTING
       add_packages    TYPE ty_add_packages OPTIONAL
       remove_packages TYPE string_table OPTIONAL
-      production      TYPE abap_bool DEFAULT abap_true
+      is_production   TYPE abap_bool DEFAULT abap_true
     RAISING
       /apmg/cx_error.
 

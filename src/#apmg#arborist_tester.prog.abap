@@ -6,14 +6,22 @@
 ************************************************************************
 REPORT /apmg/arborist_tester.
 
-SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME.
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME.
   PARAMETERS:
     p_reg  TYPE string LOWER CASE OBLIGATORY DEFAULT 'https://registry.abappm.com',
-    p_prod AS CHECKBOX DEFAULT 'X',
-    p_add  TYPE string LOWER CASE,
-    p_ver  TYPE string LOWER CASE,
-    p_rm   TYPE string LOWER CASE.
+    p_prod AS CHECKBOX DEFAULT 'X'.
+SELECTION-SCREEN END OF BLOCK b1.
+
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-t01.
+  PARAMETERS:
+    p_add_n TYPE string LOWER CASE,
+    p_add_v TYPE string LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b2.
+
+SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-t02.
+  PARAMETERS:
+    p_rem_n  TYPE string LOWER CASE.
+SELECTION-SCREEN END OF BLOCK b3.
 
 START-OF-SELECTION.
 
@@ -23,22 +31,22 @@ START-OF-SELECTION.
         with_bundle_dependencies = abap_false ).
 
       DATA(add_packages) = VALUE /apmg/if_arborist=>ty_add_packages( ).
-      IF p_add IS NOT INITIAL AND p_ver IS NOT INITIAL.
+      IF p_add_n IS NOT INITIAL AND p_add_v IS NOT INITIAL.
         INSERT VALUE #(
-          name    = p_add
-          version = p_ver ) INTO TABLE add_packages.
+          name    = p_add_n
+          version = p_add_v ) INTO TABLE add_packages.
       ENDIF.
 
       DATA(remove_packages) = VALUE string_table( ).
-      IF p_rm IS NOT INITIAL.
-        INSERT p_rm INTO TABLE remove_packages.
+      IF p_rem_n IS NOT INITIAL.
+        INSERT p_rem_n INTO TABLE remove_packages.
       ENDIF.
 
       IF add_packages IS NOT INITIAL OR remove_packages IS NOT INITIAL.
         arborist->build_ideal_tree(
           add_packages    = add_packages
           remove_packages = remove_packages
-          production      = p_prod ).
+          is_production   = p_prod ).
         DATA(tree) = arborist->get_ideal_tree( ).
       ELSE.
         tree = arborist->load_actual_tree( ).
@@ -106,8 +114,11 @@ START-OF-SELECTION.
       SKIP.
 
       LOOP AT <node>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
-        WRITE: AT /5 |{ <edge>->from->name } > { <edge>->to->name }|,
-          AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
+        WRITE: AT /5 |{ <edge>->from->name } > |.
+        IF <edge>->to IS NOT INITIAL.
+          WRITE <edge>->to->name.
+        ENDIF.
+        WRITE: AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
         ELSE.
@@ -123,8 +134,11 @@ START-OF-SELECTION.
       SKIP.
 
       LOOP AT <node>->edges_in ASSIGNING <edge>.
-        WRITE: AT /5 |{ <edge>->to->name } < { <edge>->from->name }|,
-          AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
+        WRITE: AT /5 |{ <edge>->to->name } < |.
+        IF <edge>->from IS NOT INITIAL.
+          WRITE <edge>->from->name.
+        ENDIF.
+        WRITE: AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
         ELSE.
