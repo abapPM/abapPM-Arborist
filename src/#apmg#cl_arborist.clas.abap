@@ -451,7 +451,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
       CATCH /apmg/cx_error INTO DATA(error).
         IF exact = abap_true.
-          /apmg/cx_error=>raise( error->get_text( ) ).
+          RAISE EXCEPTION TYPE /apmg/cx_error_text EXPORTING text = error->get_text( ).
         ENDIF.
         add_log(
           type    = /apmg/if_arborist=>c_log_type-warning
@@ -719,7 +719,7 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
 
   METHOD raise_error.
 
-    /apmg/cx_error=>raise( message ).
+    RAISE EXCEPTION TYPE /apmg/cx_error_text EXPORTING text = message.
 
   ENDMETHOD.
 
