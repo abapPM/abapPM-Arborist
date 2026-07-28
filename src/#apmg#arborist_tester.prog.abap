@@ -38,7 +38,7 @@ START-OF-SELECTION.
         arborist->build_ideal_tree(
           add_packages    = add_packages
           remove_packages = remove_packages
-          is_production   = p_prod ).
+          production      = p_prod ).
         DATA(tree) = arborist->get_ideal_tree( ).
       ELSE.
         tree = arborist->load_actual_tree( ).
@@ -141,18 +141,26 @@ START-OF-SELECTION.
 FORM print_diff USING diff TYPE REF TO /apmg/cl_arborist_diff
                       indent TYPE i.
 
-  DATA(indent_str) = repeat( val = ` ` occ = indent ).
+  PERFORM print_diff_line USING diff indent.
 
-  IF diff->action IS NOT INITIAL.
-    DATA(name) = COND string(
-      WHEN diff->ideal IS BOUND THEN diff->ideal->name
-      WHEN diff->actual IS BOUND THEN diff->actual->name
-      ELSE '' ).
-    WRITE: / indent_str, diff->action, name COLOR COL_KEY.
-  ENDIF.
-
-  LOOP AT diff->children ASSIGNING FIELD-SYMBOL(<child>).
-    PERFORM print_diff USING <child> indent + 2.
+  LOOP AT diff->children INTO DATA(child_diff).
+    PERFORM print_diff USING child_diff indent + 2.
   ENDLOOP.
+
+ENDFORM.
+
+
+FORM print_diff_line USING diff TYPE REF TO /apmg/cl_arborist_diff
+                           indent TYPE i.
+
+  CHECK diff->action IS NOT INITIAL.
+
+  DATA(indent_str) = repeat( val = ` ` occ = indent ).
+  DATA(name) = COND string(
+    WHEN diff->ideal IS BOUND THEN diff->ideal->name
+    WHEN diff->actual IS BOUND THEN diff->actual->name
+    ELSE '' ).
+
+  WRITE: / indent_str, diff->action, name COLOR COL_KEY.
 
 ENDFORM.

@@ -89,7 +89,9 @@ INTERFACE /apmg/if_arborist PUBLIC.
     IMPORTING
       add_packages    TYPE ty_add_packages OPTIONAL
       remove_packages TYPE string_table OPTIONAL
-      is_production   TYPE abap_bool DEFAULT abap_true.
+      production      TYPE abap_bool DEFAULT abap_true
+    RAISING
+      /apmg/cx_error.
 
   "! Get the diff between current and ideal trees
   METHODS get_diff

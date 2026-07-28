@@ -133,7 +133,7 @@ CLASS /apmg/cl_arborist_node DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA max_satisfying_version_internal TYPE /apmg/if_types=>ty_version.
+    DATA max_satisfying_val TYPE /apmg/if_types=>ty_version.
 
 ENDCLASS.
 
@@ -188,7 +188,7 @@ CLASS /apmg/cl_arborist_node IMPLEMENTATION.
     me->optional_dependencies = manifest-optional_dependencies.
     me->bundle_dependencies   = manifest-bundle_dependencies.
     me->installed             = installed.
-    me->max_satisfying_version_internal = manifest-version.
+    me->max_satisfying_val = manifest-version.
     me->max_satisfying_version = manifest-version.
 
   ENDMETHOD.
@@ -238,8 +238,8 @@ CLASS /apmg/cl_arborist_node IMPLEMENTATION.
 
   METHOD get_target_version.
 
-    IF max_satisfying_version_internal IS NOT INITIAL.
-      result = max_satisfying_version_internal.
+    IF max_satisfying_val IS NOT INITIAL.
+      result = max_satisfying_val.
     ELSE.
       result = version.
     ENDIF.
@@ -279,7 +279,7 @@ CLASS /apmg/cl_arborist_node IMPLEMENTATION.
 
   METHOD set_max_satisfying.
 
-    max_satisfying_version_internal = max_satisfying.
+    max_satisfying_val = max_satisfying.
     max_satisfying_version = max_satisfying.
 
     IF max_satisfying IS INITIAL.

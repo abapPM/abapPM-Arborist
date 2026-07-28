@@ -44,6 +44,15 @@ CLASS /apmg/cl_arborist_edge DEFINITION
       RETURNING
         VALUE(result) TYPE REF TO /apmg/cl_arborist_edge.
 
+    "! Constructor
+    METHODS constructor
+      IMPORTING
+        !tree TYPE REF TO /apmg/cl_arborist_tree
+        !from TYPE REF TO /apmg/cl_arborist_node
+        !type TYPE /apmg/if_arborist=>ty_dependency_type
+        !name TYPE /apmg/if_types=>ty_name
+        !spec TYPE /apmg/if_types=>ty_spec.
+
     "! Resolve the target node and validate
     METHODS resolve
       IMPORTING
@@ -66,14 +75,6 @@ CLASS /apmg/cl_arborist_edge DEFINITION
 
   PROTECTED SECTION.
   PRIVATE SECTION.
-
-    METHODS constructor
-      IMPORTING
-        !tree TYPE REF TO /apmg/cl_arborist_tree
-        !from TYPE REF TO /apmg/cl_arborist_node
-        !type TYPE /apmg/if_arborist=>ty_dependency_type
-        !name TYPE /apmg/if_types=>ty_name
-        !spec TYPE /apmg/if_types=>ty_spec.
 
 ENDCLASS.
 
@@ -162,13 +163,14 @@ CLASS /apmg/cl_arborist_edge IMPLEMENTATION.
 
     IF to IS NOT BOUND.
       valid = abap_false.
-      IF type = /apmg/if_arborist=>c_dependency_type-optional.
-        error = /apmg/if_arborist=>c_error_type-missing.
-      ELSEIF type = /apmg/if_arborist=>c_dependency_type-peer.
-        error = /apmg/if_arborist=>c_error_type-peer_local.
-      ELSE.
-        error = /apmg/if_arborist=>c_error_type-missing.
-      ENDIF.
+      CASE type.
+        WHEN /apmg/if_arborist=>c_dependency_type-optional.
+          error = /apmg/if_arborist=>c_error_type-missing.
+        WHEN /apmg/if_arborist=>c_dependency_type-peer.
+          error = /apmg/if_arborist=>c_error_type-peer_local.
+        WHEN OTHERS.
+          error = /apmg/if_arborist=>c_error_type-missing.
+      ENDCASE.
     ELSE.
       valid = to->satisfies( spec ).
       IF valid = abap_false.

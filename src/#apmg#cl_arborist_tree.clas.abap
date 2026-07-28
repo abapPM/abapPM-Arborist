@@ -128,8 +128,8 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
   METHOD clear_all_edges.
 
-    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<entry>).
-      <entry>-instance->clear_edges( ).
+    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<node_entry>).
+      <node_entry>-instance->clear_edges( ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -139,16 +139,16 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
     result = NEW /apmg/cl_arborist_tree( ).
 
-    LOOP AT nodes ASSIGNING <entry>.
+    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<clone_entry>).
       result->add_node(
-        package   = <entry>-package
-        manifest  = <entry>-instance->get_manifest( )
-        installed = <entry>-instance->installed ).
+        package   = <clone_entry>-package
+        manifest  = <clone_entry>-instance->get_manifest( )
+        installed = <clone_entry>-instance->installed ).
     ENDLOOP.
 
-    LOOP AT nodes ASSIGNING <entry>.
-      DATA(source) = <entry>-instance.
-      DATA(target) = result->get_by_name( <entry>-name ).
+    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<edge_entry>).
+      DATA(source) = <edge_entry>-instance.
+      DATA(target) = result->get_by_name( <edge_entry>-name ).
       IF target IS NOT BOUND.
         CONTINUE.
       ENDIF.
@@ -178,8 +178,8 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
   METHOD get_all.
 
-    LOOP AT nodes ASSIGNING <entry>.
-      INSERT <entry>-instance INTO TABLE result.
+    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<list_entry>).
+      INSERT <list_entry>-instance INTO TABLE result.
     ENDLOOP.
 
   ENDMETHOD.
@@ -187,9 +187,9 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
   METHOD get_by_name.
 
-    READ TABLE nodes ASSIGNING <entry> WITH TABLE KEY name = name.
+    READ TABLE nodes ASSIGNING FIELD-SYMBOL(<read_entry>) WITH TABLE KEY name = name.
     IF sy-subrc = 0.
-      result = <entry>-instance.
+      result = <read_entry>-instance.
     ENDIF.
 
   ENDMETHOD.
@@ -197,8 +197,8 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
   METHOD get_by_package.
 
-    LOOP AT nodes ASSIGNING <entry> WHERE package = package.
-      result = <entry>-instance.
+    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<package_entry>) WHERE package = package.
+      result = <package_entry>-instance.
       EXIT.
     ENDLOOP.
 
@@ -207,9 +207,9 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
   METHOD get_roots.
 
-    LOOP AT nodes ASSIGNING <entry>.
-      IF <entry>-instance->edges_in IS INITIAL.
-        INSERT <entry>-instance INTO TABLE result.
+    LOOP AT nodes ASSIGNING FIELD-SYMBOL(<root_entry>).
+      IF <root_entry>-instance->edges_in IS INITIAL.
+        INSERT <root_entry>-instance INTO TABLE result.
       ENDIF.
     ENDLOOP.
 
@@ -225,8 +225,8 @@ CLASS /apmg/cl_arborist_tree IMPLEMENTATION.
 
   METHOD remove_nodes.
 
-    LOOP AT names ASSIGNING FIELD-SYMBOL(<name>).
-      remove_node( <name> ).
+    LOOP AT names ASSIGNING FIELD-SYMBOL(<remove_name>).
+      remove_node( <remove_name> ).
     ENDLOOP.
 
   ENDMETHOD.

@@ -40,13 +40,10 @@ CLASS /apmg/cl_arborist_diff DEFINITION
     "! Calculate diff between actual and ideal trees
     CLASS-METHODS calculate
       IMPORTING
-        !actual TYPE REF TO /apmg/cl_arborist_tree
-        !ideal  TYPE REF TO /apmg/cl_arborist_tree
+        !actual       TYPE REF TO /apmg/cl_arborist_tree
+        !ideal        TYPE REF TO /apmg/cl_arborist_tree
       RETURNING
         VALUE(result) TYPE REF TO /apmg/cl_arborist_diff.
-
-  PROTECTED SECTION.
-  PRIVATE SECTION.
 
     METHODS constructor
       IMPORTING
@@ -54,21 +51,24 @@ CLASS /apmg/cl_arborist_diff DEFINITION
         !ideal  TYPE REF TO /apmg/cl_arborist_node OPTIONAL
         !action TYPE /apmg/if_arborist=>ty_diff_action OPTIONAL.
 
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+
     METHODS set_parent
       IMPORTING
         !parent TYPE REF TO /apmg/cl_arborist_diff.
 
     CLASS-METHODS get_action
       IMPORTING
-        !actual TYPE REF TO /apmg/cl_arborist_node
-        !ideal  TYPE REF TO /apmg/cl_arborist_node
+        !actual       TYPE REF TO /apmg/cl_arborist_node
+        !ideal        TYPE REF TO /apmg/cl_arborist_node
       RETURNING
         VALUE(result) TYPE /apmg/if_arborist=>ty_diff_action.
 
     CLASS-METHODS get_prod_children
       IMPORTING
-        !node TYPE REF TO /apmg/cl_arborist_node
-        !tree TYPE REF TO /apmg/cl_arborist_tree
+        !node         TYPE REF TO /apmg/cl_arborist_node
+        !tree         TYPE REF TO /apmg/cl_arborist_tree
       RETURNING
         VALUE(result) TYPE /apmg/cl_arborist_node=>ty_node_refs.
 
@@ -97,11 +97,11 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
     DATA(ideal_kids)  = get_prod_children( node = ideal_node tree = ideal_tree ).
 
     DATA(child_names) = VALUE string_table( ).
-    LOOP AT actual_kids ASSIGNING FIELD-SYMBOL(<actual_kid>).
-      INSERT <actual_kid>-name INTO TABLE child_names.
+    LOOP AT actual_kids INTO DATA(actual_kid).
+      INSERT actual_kid->name INTO TABLE child_names.
     ENDLOOP.
-    LOOP AT ideal_kids ASSIGNING FIELD-SYMBOL(<ideal_kid>).
-      INSERT <ideal_kid>-name INTO TABLE child_names.
+    LOOP AT ideal_kids INTO DATA(ideal_kid).
+      INSERT ideal_kid->name INTO TABLE child_names.
     ENDLOOP.
     SORT child_names.
     DELETE ADJACENT DUPLICATES FROM child_names.
@@ -153,8 +153,8 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
         APPEND LINES OF sub->leaves TO leaves_result.
         APPEND LINES OF sub->unchanged TO unchanged_result.
         APPEND LINES OF sub->removed TO removed_result.
-        LOOP AT sub->children ASSIGNING FIELD-SYMBOL(<subchild>).
-          <subchild->set_parent( me ).
+        LOOP AT sub->children INTO DATA(sub_child).
+          sub_child->set_parent( me ).
         ENDLOOP.
       ENDIF.
     ENDLOOP.
@@ -183,11 +183,11 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
     DATA(ideal_roots)  = ideal->get_roots( ).
 
     DATA(root_names) = VALUE string_table( ).
-    LOOP AT actual_roots ASSIGNING FIELD-SYMBOL(<root>).
-      INSERT <root>-name INTO TABLE root_names.
+    LOOP AT actual_roots INTO DATA(actual_root).
+      INSERT actual_root->name INTO TABLE root_names.
     ENDLOOP.
-    LOOP AT ideal_roots ASSIGNING FIELD-SYMBOL(<ideal_root>).
-      INSERT <ideal_root>-name INTO TABLE root_names.
+    LOOP AT ideal_roots INTO DATA(ideal_root).
+      INSERT ideal_root->name INTO TABLE root_names.
     ENDLOOP.
     SORT root_names.
     DELETE ADJACENT DUPLICATES FROM root_names.
@@ -235,8 +235,8 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
         APPEND LINES OF sub_diff->leaves TO result->leaves.
         APPEND LINES OF sub_diff->unchanged TO result->unchanged.
         APPEND LINES OF sub_diff->removed TO result->removed.
-        LOOP AT sub_diff->children ASSIGNING FIELD-SYMBOL(<subchild>).
-          <subchild->set_parent( result ).
+        LOOP AT sub_diff->children INTO DATA(root_child).
+          root_child->set_parent( result ).
         ENDLOOP.
       ENDIF.
     ENDLOOP.
@@ -265,7 +265,7 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    IF actual->version <> ideal->get_target_version( ).
+    IF ideal->get_target_version( ) <> actual->version.
       result = /apmg/if_arborist=>c_diff_action-change.
     ENDIF.
 
@@ -302,7 +302,7 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
 
   METHOD set_parent.
 
-    parent = parent.
+    me->parent = parent.
 
   ENDMETHOD.
 
