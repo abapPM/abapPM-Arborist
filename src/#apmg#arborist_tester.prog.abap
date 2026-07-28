@@ -143,8 +143,10 @@ FORM print_diff USING diff TYPE REF TO /apmg/cl_arborist_diff
 
   PERFORM print_diff_line USING diff indent.
 
+  DATA(next_indent) = indent + 2.
+
   LOOP AT diff->children INTO DATA(child_diff).
-    PERFORM print_diff USING child_diff indent + 2.
+    PERFORM print_diff USING child_diff next_indent.
   ENDLOOP.
 
 ENDFORM.
