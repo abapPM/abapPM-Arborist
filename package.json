@@ -1,0 +1,12 @@
+{
+  "name": "@apm/arborist",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inspect and manage package trees",
+  "scripts": {
+    "lint": "abaplint"
+  },
+  "devDependencies": {
+    "@abaplint/cli": "^2.120.6"
+  }
+}

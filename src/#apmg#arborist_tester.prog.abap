@@ -6,20 +6,50 @@
 ************************************************************************
 REPORT /apmg/arborist_tester.
 
-SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME.
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME.
   PARAMETERS:
     p_reg  TYPE string LOWER CASE OBLIGATORY DEFAULT 'https://registry.abappm.com',
-    p_deps AS CHECKBOX.
+    p_prod AS CHECKBOX DEFAULT 'X'.
+SELECTION-SCREEN END OF BLOCK b1.
+
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-t01.
+  PARAMETERS:
+    p_add_n TYPE string LOWER CASE,
+    p_add_v TYPE string LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b2.
+
+SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-t02.
+  PARAMETERS p_rem_n  TYPE string LOWER CASE.
+SELECTION-SCREEN END OF BLOCK b3.
 
 START-OF-SELECTION.
 
   TRY.
       DATA(arborist) = /apmg/cl_arborist=>factory(
         registry                 = p_reg
-        with_bundle_dependencies = p_deps ).
+        with_bundle_dependencies = abap_false ).
 
-      DATA(tree) = arborist->load_actual_tree( ).
+      DATA(add_packages) = VALUE /apmg/if_arborist=>ty_add_packages( ).
+      IF p_add_n IS NOT INITIAL AND p_add_v IS NOT INITIAL.
+        INSERT VALUE #(
+          name    = p_add_n
+          version = p_add_v ) INTO TABLE add_packages.
+      ENDIF.
+
+      DATA(remove_packages) = VALUE string_table( ).
+      IF p_rem_n IS NOT INITIAL.
+        INSERT p_rem_n INTO TABLE remove_packages.
+      ENDIF.
+
+      IF add_packages IS NOT INITIAL OR remove_packages IS NOT INITIAL.
+        arborist->build_ideal_tree(
+          add_packages    = add_packages
+          remove_packages = remove_packages
+          is_production   = p_prod ).
+        DATA(tree) = arborist->get_ideal_tree( ).
+      ELSE.
+        tree = arborist->load_actual_tree( ).
+      ENDIF.
 
     CATCH cx_root INTO DATA(error).
       cl_abap_browser=>show_html( html_string = error->get_text( ) ).
@@ -34,6 +64,18 @@ START-OF-SELECTION.
   LOOP AT log ASSIGNING FIELD-SYMBOL(<log>).
     WRITE: / <log>-type, <log>-message, <log>-name, <log>-version, <log>-spec.
   ENDLOOP.
+
+  IF add_packages IS NOT INITIAL OR remove_packages IS NOT INITIAL.
+    SKIP.
+    ULINE.
+    WRITE / 'Diff:' COLOR COL_HEADING.
+    SKIP.
+
+    DATA(diff) = arborist->get_diff( ).
+    IF diff IS BOUND.
+      PERFORM print_diff USING diff 0.
+    ENDIF.
+  ENDIF.
 
   SKIP.
   ULINE.
@@ -52,6 +94,10 @@ START-OF-SELECTION.
       AT 115 lines( <node>->optional_dependencies ) LEFT-JUSTIFIED,
       AT 120 lines( <node>->peer_dependencies ) LEFT-JUSTIFIED.
 
+    IF <node>->max_satisfying_version IS NOT INITIAL AND <node>->max_satisfying_version <> <node>->version.
+      WRITE AT 45 |-> { <node>->max_satisfying_version }| COLOR COL_TOTAL.
+    ENDIF.
+
     IF <node>->errors IS INITIAL.
       WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <node>->installed })|.
     ELSE.
@@ -67,8 +113,11 @@ START-OF-SELECTION.
       SKIP.
 
       LOOP AT <node>->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
-        WRITE: AT /5 |{ <edge>->from->name } > { <edge>->to->name }|,
-          AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
+        WRITE AT /5 |{ <edge>->from->name } > |.
+        IF <edge>->to IS NOT INITIAL.
+          WRITE <edge>->to->name.
+        ENDIF.
+        WRITE: AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
         ELSE.
@@ -84,8 +133,11 @@ START-OF-SELECTION.
       SKIP.
 
       LOOP AT <node>->edges_in ASSIGNING <edge>.
-        WRITE: AT /5 |{ <edge>->to->name } < { <edge>->from->name }|,
-          AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
+        WRITE AT /5 |{ <edge>->to->name } < |.
+        IF <edge>->from IS NOT INITIAL.
+          WRITE <edge>->from->name.
+        ENDIF.
+        WRITE: AT 55 |{ <edge>->name }: { <edge>->spec }| COLOR COL_NORMAL, AT 100 <edge>->type.
         IF <edge>->error IS INITIAL.
           WRITE: AT 130 'ok' COLOR COL_POSITIVE, |({ <edge>->valid })|.
         ELSE.
@@ -98,3 +150,32 @@ START-OF-SELECTION.
 
     SKIP.
   ENDLOOP.
+
+FORM print_diff USING diff TYPE REF TO /apmg/cl_arborist_diff
+                      indent TYPE i.
+
+  PERFORM print_diff_line USING diff indent.
+
+  DATA(next_indent) = indent + 2.
+
+  LOOP AT diff->children INTO DATA(child_diff).
+    PERFORM print_diff USING child_diff next_indent.
+  ENDLOOP.
+
+ENDFORM.
+
+
+FORM print_diff_line USING diff TYPE REF TO /apmg/cl_arborist_diff
+                           indent TYPE i.
+
+  CHECK diff->action IS NOT INITIAL.
+
+  DATA(indent_str) = repeat( val = ` ` occ = indent ).
+  DATA(name) = COND string(
+    WHEN diff->ideal IS BOUND THEN diff->ideal->name
+    WHEN diff->actual IS BOUND THEN diff->actual->name
+    ELSE '' ).
+
+  WRITE: / indent_str, diff->action, name COLOR COL_KEY.
+
+ENDFORM.
