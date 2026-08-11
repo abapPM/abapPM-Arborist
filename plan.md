@@ -68,7 +68,7 @@ adaptations (single global tree, no bundle deps in tree).
 ### Phase 6: Testing / polish
 
 - [x] Update `arborist_tester` for new API
-- [ ] Manual test on SAP system
+- [ ] Manual test on  SAP system
 
 ## Status
 
