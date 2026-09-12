@@ -12,7 +12,7 @@
 
 # apm Arborist
 
-Inspect and manage package trees
+Inspect and manage package trees.
 
 apm is a *package manager* and a *registry* for ABAP applications and modules.
 
