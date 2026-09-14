@@ -96,7 +96,7 @@ INTERFACE /apmg/if_arborist PUBLIC.
   "! Get the diff between current and ideal trees
   METHODS get_diff
     RETURNING
-      VALUE(result) TYPE REF TO /apmg/cl_arborist_diff.
+      VALUE(result) TYPE REF TO /apmg/if_arborist_diff.
 
   " WRITING
 
