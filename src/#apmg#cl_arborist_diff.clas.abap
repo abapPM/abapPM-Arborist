@@ -56,6 +56,31 @@ CLASS /apmg/cl_arborist_diff DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
+    TYPES:
+      BEGIN OF ty_change_entry,
+        name TYPE /apmg/if_types=>ty_name,
+        diff TYPE REF TO /apmg/if_arborist_diff,
+      END OF ty_change_entry,
+      ty_change_entries TYPE HASHED TABLE OF ty_change_entry WITH UNIQUE KEY name.
+
+    TYPES:
+      BEGIN OF ty_depth_entry,
+        name  TYPE /apmg/if_types=>ty_name,
+        depth TYPE i,
+      END OF ty_depth_entry,
+      ty_depth_entries TYPE HASHED TABLE OF ty_depth_entry WITH UNIQUE KEY name.
+
+    TYPES:
+      BEGIN OF ty_ordered_change,
+        name  TYPE /apmg/if_types=>ty_name,
+        depth TYPE i,
+        diff  TYPE REF TO /apmg/if_arborist_diff,
+      END OF ty_ordered_change,
+      ty_ordered_changes TYPE STANDARD TABLE OF ty_ordered_change WITH EMPTY KEY.
+
+    DATA actual_tree TYPE REF TO /apmg/cl_arborist_tree.
+    DATA ideal_tree TYPE REF TO /apmg/cl_arborist_tree.
+
     METHODS set_parent
       IMPORTING
         !parent TYPE REF TO /apmg/if_arborist_diff.
@@ -83,6 +108,20 @@ CLASS /apmg/cl_arborist_diff DEFINITION
       IMPORTING
         !child TYPE REF TO /apmg/cl_arborist_diff.
 
+    METHODS collect_change_entries
+      IMPORTING
+        !diff    TYPE REF TO /apmg/if_arborist_diff
+      CHANGING
+        !changes TYPE ty_change_entries.
+
+    METHODS collect_dependency_depths
+      IMPORTING
+        !node   TYPE REF TO /apmg/cl_arborist_node
+        !depth  TYPE i
+      CHANGING
+        !depths TYPE ty_depth_entries
+        !path   TYPE string_table.
+
 ENDCLASS.
 
 
@@ -107,6 +146,64 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
   METHOD /apmg/if_arborist_diff~get_children.
 
     result = children.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_changes.
+
+    DATA(root) = me.
+    WHILE root->parent IS BOUND.
+      root = CAST /apmg/cl_arborist_diff( root->parent ).
+    ENDWHILE.
+
+    DATA(changes) = VALUE ty_change_entries( ).
+    root->collect_change_entries(
+      EXPORTING
+        diff    = root
+      CHANGING
+        changes = changes ).
+
+    DATA(depths) = VALUE ty_depth_entries( ).
+    DATA(path) = VALUE string_table( ).
+
+    IF root->ideal_tree IS BOUND.
+      root->collect_dependency_depths(
+        EXPORTING
+          node   = root->ideal_tree->get_by_name( name )
+          depth  = 0
+        CHANGING
+          depths = depths
+          path   = path ).
+    ENDIF.
+
+    CLEAR path.
+    IF root->actual_tree IS BOUND.
+      root->collect_dependency_depths(
+        EXPORTING
+          node   = root->actual_tree->get_by_name( name )
+          depth  = 0
+        CHANGING
+          depths = depths
+          path   = path ).
+    ENDIF.
+
+    DATA(ordered_changes) = VALUE ty_ordered_changes( ).
+    LOOP AT depths ASSIGNING FIELD-SYMBOL(<depth>).
+      READ TABLE changes ASSIGNING FIELD-SYMBOL(<change>)
+        WITH TABLE KEY name = <depth>-name.
+      IF sy-subrc = 0.
+        APPEND VALUE #(
+          name  = <change>-name
+          depth = <depth>-depth
+          diff  = <change>-diff ) TO ordered_changes.
+      ENDIF.
+    ENDLOOP.
+
+    SORT ordered_changes BY depth DESCENDING name ASCENDING.
+    LOOP AT ordered_changes ASSIGNING FIELD-SYMBOL(<ordered_change>).
+      APPEND <ordered_change>-diff TO result.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -237,6 +334,9 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
       RETURN.
     ENDIF.
 
+    result->actual_tree = actual.
+    result->ideal_tree = ideal.
+
     DATA(actual_roots) = actual->get_roots( ).
     DATA(ideal_roots)  = ideal->get_roots( ).
 
@@ -298,6 +398,70 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
         ENDLOOP.
       ENDIF.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD collect_change_entries.
+
+    DATA(ideal_node) = diff->get_ideal( ).
+    DATA(actual_node) = diff->get_actual( ).
+    DATA(name) = COND /apmg/if_types=>ty_name(
+      WHEN ideal_node IS BOUND THEN ideal_node->name
+      WHEN actual_node IS BOUND THEN actual_node->name
+      ELSE '' ).
+
+    IF diff->get_action( ) IS NOT INITIAL
+        AND name IS NOT INITIAL
+        AND NOT line_exists( changes[ name = name ] ).
+      INSERT VALUE #(
+        name = name
+        diff = diff ) INTO TABLE changes.
+    ENDIF.
+
+    LOOP AT diff->get_children( ) INTO DATA(child).
+      collect_change_entries(
+        EXPORTING
+          diff    = child
+        CHANGING
+          changes = changes ).
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD collect_dependency_depths.
+
+    IF node IS NOT BOUND OR line_exists( path[ table_line = node->name ] ).
+      RETURN.
+    ENDIF.
+
+    READ TABLE depths ASSIGNING FIELD-SYMBOL(<depth>)
+      WITH TABLE KEY name = node->name.
+    IF sy-subrc = 0.
+      IF depth > <depth>-depth.
+        <depth>-depth = depth.
+      ENDIF.
+    ELSE.
+      INSERT VALUE #(
+        name  = node->name
+        depth = depth ) INTO TABLE depths.
+    ENDIF.
+
+    APPEND node->name TO path.
+    LOOP AT node->edges_out ASSIGNING FIELD-SYMBOL(<edge>).
+      IF <edge>->type = /apmg/if_arborist=>c_dependency_type-prod
+          AND <edge>->to IS BOUND.
+        collect_dependency_depths(
+          EXPORTING
+            node   = <edge>->to
+            depth  = depth + 1
+          CHANGING
+            depths = depths
+            path   = path ).
+      ENDIF.
+    ENDLOOP.
+    DELETE path WHERE table_line = node->name.
 
   ENDMETHOD.
 
