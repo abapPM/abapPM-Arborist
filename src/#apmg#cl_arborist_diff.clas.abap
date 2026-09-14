@@ -16,8 +16,10 @@ CLASS /apmg/cl_arborist_diff DEFINITION
 ************************************************************************
   PUBLIC SECTION.
 
+    INTERFACES /apmg/if_arborist_diff.
+
     TYPES:
-      ty_diff_ref  TYPE REF TO /apmg/cl_arborist_diff,
+      ty_diff_ref  TYPE REF TO /apmg/if_arborist_diff,
       ty_diff_refs TYPE STANDARD TABLE OF ty_diff_ref WITH KEY table_line.
 
     "! Node in the actual tree (null for ADD)
@@ -27,7 +29,7 @@ CLASS /apmg/cl_arborist_diff DEFINITION
     "! Diff action: ADD, CHANGE, REMOVE, or initial for synthetic root
     DATA action TYPE /apmg/if_arborist=>ty_diff_action READ-ONLY.
     "! Parent diff node
-    DATA parent TYPE REF TO /apmg/cl_arborist_diff READ-ONLY.
+    DATA parent TYPE REF TO /apmg/if_arborist_diff READ-ONLY.
     "! Child diff nodes
     DATA children TYPE ty_diff_refs READ-ONLY.
     "! Leaf diff nodes under this branch
@@ -56,7 +58,7 @@ CLASS /apmg/cl_arborist_diff DEFINITION
 
     METHODS set_parent
       IMPORTING
-        !parent TYPE REF TO /apmg/cl_arborist_diff.
+        !parent TYPE REF TO /apmg/if_arborist_diff.
 
     CLASS-METHODS get_action
       IMPORTING
@@ -86,6 +88,62 @@ ENDCLASS.
 
 
 CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
+
+
+  METHOD /apmg/if_arborist_diff~get_action.
+
+    result = action.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_actual.
+
+    result = actual.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_children.
+
+    result = children.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_ideal.
+
+    result = ideal.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_leaves.
+
+    result = leaves.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_parent.
+
+    result = parent.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_removed.
+
+    result = removed.
+
+  ENDMETHOD.
+
+
+  METHOD /apmg/if_arborist_diff~get_unchanged.
+
+    result = unchanged.
+
+  ENDMETHOD.
 
 
   METHOD build_children.
@@ -154,7 +212,7 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
         APPEND LINES OF sub->unchanged TO unchanged_result.
         APPEND LINES OF sub->removed TO removed_result.
         LOOP AT sub->children INTO DATA(sub_child).
-          sub_child->set_parent( me ).
+          CAST /apmg/cl_arborist_diff( sub_child )->set_parent( me ).
         ENDLOOP.
       ENDIF.
     ENDLOOP.
@@ -236,7 +294,7 @@ CLASS /apmg/cl_arborist_diff IMPLEMENTATION.
         APPEND LINES OF sub_diff->unchanged TO result->unchanged.
         APPEND LINES OF sub_diff->removed TO result->removed.
         LOOP AT sub_diff->children INTO DATA(root_child).
-          root_child->set_parent( result ).
+          CAST /apmg/cl_arborist_diff( root_child )->set_parent( result ).
         ENDLOOP.
       ENDIF.
     ENDLOOP.

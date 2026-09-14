@@ -151,31 +151,34 @@ START-OF-SELECTION.
     SKIP.
   ENDLOOP.
 
-FORM print_diff USING diff TYPE REF TO /apmg/cl_arborist_diff
+FORM print_diff USING diff TYPE REF TO /apmg/if_arborist_diff
                       indent TYPE i.
 
   PERFORM print_diff_line USING diff indent.
 
   DATA(next_indent) = indent + 2.
 
-  LOOP AT diff->children INTO DATA(child_diff).
+  LOOP AT diff->get_children( ) INTO DATA(child_diff).
     PERFORM print_diff USING child_diff next_indent.
   ENDLOOP.
 
 ENDFORM.
 
 
-FORM print_diff_line USING diff TYPE REF TO /apmg/cl_arborist_diff
+FORM print_diff_line USING diff TYPE REF TO /apmg/if_arborist_diff
                            indent TYPE i.
 
-  CHECK diff->action IS NOT INITIAL.
+  DATA(action) = diff->get_action( ).
+  CHECK action IS NOT INITIAL.
 
   DATA(indent_str) = repeat( val = ` ` occ = indent ).
+  DATA(ideal) = diff->get_ideal( ).
+  DATA(actual) = diff->get_actual( ).
   DATA(name) = COND string(
-    WHEN diff->ideal IS BOUND THEN diff->ideal->name
-    WHEN diff->actual IS BOUND THEN diff->actual->name
+    WHEN ideal IS BOUND THEN ideal->name
+    WHEN actual IS BOUND THEN actual->name
     ELSE '' ).
 
-  WRITE: / indent_str, diff->action, name COLOR COL_KEY.
+  WRITE: / indent_str, action, name COLOR COL_KEY.
 
 ENDFORM.
