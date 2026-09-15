@@ -59,7 +59,7 @@ CLASS /apmg/cl_arborist_tree DEFINITION
     METHODS add_node
       IMPORTING
         !package      TYPE /apmg/if_types=>ty_devclass OPTIONAL
-        !manifest     TYPE /apmg/if_types=>ty_package_json
+        !manifest     TYPE /apmg/if_types=>ty_manifest
         !installed    TYPE abap_bool DEFAULT abap_true
       RETURNING
         VALUE(result) TYPE REF TO /apmg/cl_arborist_node.

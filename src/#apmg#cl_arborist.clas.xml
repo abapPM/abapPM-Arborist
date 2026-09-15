@@ -11,6 +11,7 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
+   <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
   </asx:values>
  </asx:abap>
 </abapGit>
