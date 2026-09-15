@@ -436,7 +436,10 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       DATA(is_optional_only) = abap_true.
 
       LOOP AT tree->get_all( ) INTO source_node.
-        LOOP AT source_node->edges_out INTO source_edge WHERE name = <missing_name>.
+        LOOP AT source_node->edges_out INTO source_edge.
+          IF source_edge->name <> <missing_name>.
+            CONTINUE.
+          ENDIF.
           DATA(version_helper) = source_edge->from.
           IF source_edge->type = /apmg/if_arborist=>c_dependency_type-peer.
             has_peer_dependency = abap_true.
@@ -920,8 +923,10 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       DATA(all_satisfied)  = abap_true.
       DATA(max_satisfying) = resolve_node->version.
 
-      LOOP AT resolve_node->edges_in ASSIGNING <edge>
-          WHERE type <> /apmg/if_arborist=>c_dependency_type-optional.
+      LOOP AT resolve_node->edges_in ASSIGNING <edge>.
+        IF <edge>->type = /apmg/if_arborist=>c_dependency_type-optional.
+          CONTINUE.
+        ENDIF.
         INSERT <edge>->spec INTO TABLE required_specs.
 
         IF resolve_node->satisfies( <edge>->spec ) = abap_false.
@@ -949,8 +954,10 @@ CLASS /apmg/cl_arborist IMPLEMENTATION.
       DATA(specs) = VALUE string_table( ).
       DATA(all_satisfied) = abap_true.
 
-      LOOP AT node->edges_in INTO DATA(edge)
-          WHERE type <> /apmg/if_arborist=>c_dependency_type-optional.
+      LOOP AT node->edges_in INTO DATA(edge).
+        IF edge->type = /apmg/if_arborist=>c_dependency_type-optional.
+          CONTINUE.
+        ENDIF.
         INSERT edge->spec INTO TABLE specs.
         IF node->satisfies( edge->spec ) = abap_false.
           all_satisfied = abap_false.

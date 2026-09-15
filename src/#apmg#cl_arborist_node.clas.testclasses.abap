@@ -78,7 +78,7 @@ CLASS ltcl_node IMPLEMENTATION.
       dev_dependencies      = VALUE #( ( key = 'dev' range = '^1' ) )
       optional_dependencies = VALUE #( ( key = 'optional' range = '*' ) )
       peer_dependencies     = VALUE #( ( key = 'peer' range = '^3' ) )
-      bundle_dependencies   = VALUE #( ( 'bundled' ) ) ) ).
+      bundle_dependencies   = VALUE #( ( table_line = 'bundled' ) ) ) ).
 
     cl_abap_unit_assert=>assert_equals( act = node->version exp = '2.0.0' ).
     cl_abap_unit_assert=>assert_equals( act = lines( node->dependencies ) exp = 1 ).
