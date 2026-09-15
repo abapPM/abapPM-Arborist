@@ -37,9 +37,9 @@ INTERFACE /apmg/if_arborist PUBLIC.
   CONSTANTS:
     BEGIN OF c_diagnostic_category,
       requested_version_not_found TYPE string VALUE 'REQUESTED_VERSION_NOT_FOUND',
-      no_satisfying_version        TYPE string VALUE 'NO_SATISFYING_VERSION',
-      peer_dependency              TYPE string VALUE 'PEER_DEPENDENCY',
-      manifest_unavailable         TYPE string VALUE 'MANIFEST_UNAVAILABLE',
+      no_satisfying_version       TYPE string VALUE 'NO_SATISFYING_VERSION',
+      peer_dependency             TYPE string VALUE 'PEER_DEPENDENCY',
+      manifest_unavailable        TYPE string VALUE 'MANIFEST_UNAVAILABLE',
       circular_resolution         TYPE string VALUE 'CIRCULAR_RESOLUTION',
       resolution_limit            TYPE string VALUE 'RESOLUTION_LIMIT',
     END OF c_diagnostic_category.
